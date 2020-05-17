@@ -54,7 +54,7 @@ namespace EarthPolygonFileUtility
             XmlNamespaceManager manager = new XmlNamespaceManager(xml.NameTable);
             manager.AddNamespace("ns", "http://www.opengis.net/kml/2.2");
 
-            foreach (XmlNode node in xml.SelectNodes("//ns:Polygon", manager))
+            foreach (XmlNode node in xml.SelectNodes("//ns:coordinates", manager))
             {
                 Polygon polygon = new Polygon();
 
@@ -66,17 +66,24 @@ namespace EarthPolygonFileUtility
                 string[] coordinateStrs = text.Split(" ");
 
                 if (coordinateStrs.Length > 1)
+                {
                     foreach (string cs in coordinateStrs)
-                    {
-                        string[] parts = cs.Split(",");
-                        polygon.Coordinates.Add(new Coordinate()
+                        if (!string.IsNullOrEmpty(cs))
                         {
-                            Latitude = Convert.ToDecimal(parts[0]),
-                            Longitude = Convert.ToDecimal(parts[1])
-                        });
-                    }
+                            string[] parts = cs.Split(",");
+                            polygon.Coordinates.Add(new Coordinate()
+                            {
+                                Latitude = Convert.ToDouble(parts[0]),
+                                Longitude = Convert.ToDouble(parts[1])
+                            });
+                        }
+
+                    polygons.Add(polygon);
+                }
+
             }
 
+            int q = 1;
             return polygons;
         }
     }
