@@ -20,17 +20,17 @@ namespace EarthPolygonFileUtility
 
         public List<Polygon> GetPolygons(int plantId)
         {
-            string urlHashHex = Math.Abs(Url.GetHashCode()).ToString("X").ToLower();
+            string fileId = Guid.NewGuid().ToString().ToLower();
             Directory.CreateDirectory(TemporaryDataDirectory);
 
             WebClient wc = new WebClient();
-            string tempDownloadBase = urlHashHex + ".kmz";
+            string tempDownloadBase = fileId + ".kmz";
             string downloadedFile = Path.Combine(TemporaryDataDirectory, tempDownloadBase);
             wc.DownloadFile(Url, downloadedFile);
 
             string downloadedZipFile = downloadedFile.Replace(".kmz", ".zip");
             File.Move(downloadedFile, downloadedZipFile);
-            string unzippedDirectory = Path.Combine(TemporaryDataDirectory, urlHashHex);
+            string unzippedDirectory = Path.Combine(TemporaryDataDirectory, fileId);
             ZipFile.ExtractToDirectory(downloadedZipFile, unzippedDirectory);
 
             DirectoryInfo dir = new DirectoryInfo(unzippedDirectory);

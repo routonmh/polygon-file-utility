@@ -33,7 +33,7 @@ namespace EarthPolygonFileUtility
                     return it;
                 }).ToList();
 
-            List<Polygon> polygons = fetchAndReadKmzFiles(fileRecordUtility, 750);
+            List<Polygon> polygons = fetchAndReadKmzFiles(fileRecordUtility, 250);
             List<Coordinate> coordinates = new List<Coordinate>();
 
             int coordinateIdx = 0;
@@ -106,6 +106,8 @@ namespace EarthPolygonFileUtility
             File.WriteAllText("region-shape-file.csv", regionShapeFileRowsStr);
             File.WriteAllText("polygon.csv", polygonRowsStr);
             File.WriteAllText("polygon-coordinate.csv", coordinatesRowsStr);
+
+            Console.WriteLine("Wrote csv files.");
         }
 
         private List<Polygon> fetchAndReadKmzFiles(TableFileRecordUtility fileRecordUtility, int requestDelayMs)
