@@ -10,7 +10,6 @@ namespace EarthPolygonFileUtility
 {
     public class KmzFileToPointCollectionUtility
     {
-        public static readonly string TemporaryDataDirectory = "temporary-data";
         public string Url { get; }
 
         public KmzFileToPointCollectionUtility(string url)
@@ -18,19 +17,13 @@ namespace EarthPolygonFileUtility
             Url = url;
         }
 
-        public List<Polygon> GetPolygons(int plantId)
+        public List<Polygon> GetPolygons(int plantId, string downloadedFile, string fileId)
         {
-            string fileId = Guid.NewGuid().ToString().ToLower();
-            Directory.CreateDirectory(TemporaryDataDirectory);
-
-            WebClient wc = new WebClient();
-            string tempDownloadBase = fileId + ".kmz";
-            string downloadedFile = Path.Combine(TemporaryDataDirectory, tempDownloadBase);
-            wc.DownloadFile(Url, downloadedFile);
+            Directory.CreateDirectory(Program.TemporaryDataDirectory);
 
             string downloadedZipFile = downloadedFile.Replace(".kmz", ".zip");
             File.Move(downloadedFile, downloadedZipFile);
-            string unzippedDirectory = Path.Combine(TemporaryDataDirectory, fileId);
+            string unzippedDirectory = Path.Combine(Program.TemporaryDataDirectory, fileId);
             ZipFile.ExtractToDirectory(downloadedZipFile, unzippedDirectory);
 
             DirectoryInfo dir = new DirectoryInfo(unzippedDirectory);

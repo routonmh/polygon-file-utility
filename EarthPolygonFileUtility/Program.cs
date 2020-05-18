@@ -9,11 +9,14 @@ namespace EarthPolygonFileUtility
     {
         public static string ConnectionString { get; set; }
         public static string TablesDirectory { get; set; }
+        public static string TemporaryDataDirectory { get; set; }
+        public static string OutputDirectory { get; set; }
 
         static void Main(string[] args)
         {
-            ConnectionString = args[0];
-            TablesDirectory = args[1];
+            TablesDirectory = args[0];
+            TemporaryDataDirectory = args[1];
+            OutputDirectory = args[2];
 
             new Controller().Start();
         }

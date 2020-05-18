@@ -35,15 +35,15 @@ namespace EarthPolygonFileUtility
                     string attributeFilename = files.Find(x => x.Contains("Attribute"));
                     string regionShapeFilename = files.Find(x => x.Contains("RegionShapeFile"));
 
-                    ReadPlantsCsv(plantFilename)
+                    ReadPlantsCsv(plantFilename, idx)
                         .ForEach(x => PlantRecords.Add(x));
                     ReadAttributesCsv(attributeFilename, idx)
                         .ForEach(x => AttributeRecords.Add(x));
                     ReadRegionShapeFileCsv(regionShapeFilename, idx)
                         .ForEach(x => RegionShapeFileRecords.Add(x));
-                }
 
-                idx++;
+                    idx++;
+                }
             });
         }
 
@@ -52,7 +52,7 @@ namespace EarthPolygonFileUtility
         /// </summary>
         /// <param name="filepath"></param>
         /// <returns></returns>
-        public List<Plant> ReadPlantsCsv(string filepath)
+        public List<Plant> ReadPlantsCsv(string filepath, int plantIdOffsetIdx)
         {
             List<Plant> plants = new List<Plant>();
 
@@ -68,9 +68,11 @@ namespace EarthPolygonFileUtility
                     {
                         string[] fields = parser.ReadFields();
 
+                        int offsetPlantId = Convert.ToInt32(fields[0]) +
+                                            (KeyCombinationBaseOffset * plantIdOffsetIdx);
                         Plant p = new Plant()
                         {
-                            PlantID = Convert.ToInt32(fields[0]),
+                            PlantID = offsetPlantId,
                             CommonName = fields[1],
                             ScientificName = fields[2],
                             PlantDescription = fields[3],
