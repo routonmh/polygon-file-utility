@@ -1,4 +1,4 @@
-namespace EarthPolygonFileUtility
+namespace EarthPolygonFileUtility.Entities
 {
     public class Coordinate
     {

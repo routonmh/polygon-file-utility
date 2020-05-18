@@ -2,11 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
-using System.Linq;
 using System.Net;
 using System.Xml;
-using System.Xml.Linq;
-using System.Xml.XPath;
+using EarthPolygonFileUtility.Entities;
 
 namespace EarthPolygonFileUtility
 {
@@ -20,7 +18,7 @@ namespace EarthPolygonFileUtility
             Url = url;
         }
 
-        public void Run()
+        public List<Polygon> GetPolygons()
         {
             string urlHashHex = Math.Abs(Url.GetHashCode()).ToString("X").ToLower();
             Directory.CreateDirectory(TemporaryDataDirectory);
@@ -41,9 +39,8 @@ namespace EarthPolygonFileUtility
             string xmlFilename = file.FullName.Replace(".kml", ".xml");
             File.Move(file.FullName, xmlFilename);
 
-            List<Polygon> polygons = parsePolygonsFromXml(xmlFilename);
+            return parsePolygonsFromXml(xmlFilename);
         }
-
 
         private List<Polygon> parsePolygonsFromXml(string filepath)
         {
@@ -58,7 +55,6 @@ namespace EarthPolygonFileUtility
             {
                 Polygon polygon = new Polygon();
 
-                Console.WriteLine("{0}: {1}", node.Name, node.InnerText);
                 string text = node.InnerText;
                 text = text.Replace("\t", "");
                 text = text.Replace("\n", "");
@@ -80,10 +76,8 @@ namespace EarthPolygonFileUtility
 
                     polygons.Add(polygon);
                 }
-
             }
 
-            int q = 1;
             return polygons;
         }
     }
