@@ -45,8 +45,6 @@ namespace EarthPolygonFileUtility
 
                 idx++;
             });
-
-            int t = 1;
         }
 
         /// <summary>
@@ -157,10 +155,15 @@ namespace EarthPolygonFileUtility
                         {
                             int offsetPlantId = Convert.ToInt32(fields[1]) +
                                                 (KeyCombinationBaseOffset * plantIdOffsetIdx);
+
+                            string url = fields[2];
+                            url = url.Replace("open?", "uc?export=download&");
+                            url = url.Replace("#", "");
+
                             RegionShapeFile rsf = new RegionShapeFile()
                             {
                                 PlantID = offsetPlantId,
-                                LinkToFile = fields[2]
+                                LinkToFile = url
                             };
 
                             regionShapeFiles.Add(rsf);

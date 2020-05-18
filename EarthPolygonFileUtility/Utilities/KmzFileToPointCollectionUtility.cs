@@ -18,7 +18,7 @@ namespace EarthPolygonFileUtility
             Url = url;
         }
 
-        public List<Polygon> GetPolygons()
+        public List<Polygon> GetPolygons(int plantId)
         {
             string urlHashHex = Math.Abs(Url.GetHashCode()).ToString("X").ToLower();
             Directory.CreateDirectory(TemporaryDataDirectory);
@@ -39,7 +39,9 @@ namespace EarthPolygonFileUtility
             string xmlFilename = file.FullName.Replace(".kml", ".xml");
             File.Move(file.FullName, xmlFilename);
 
-            return parsePolygonsFromXml(xmlFilename);
+            List<Polygon> polygons = parsePolygonsFromXml(xmlFilename);
+            polygons.ForEach(pgon => pgon.PlantID = plantId);
+            return polygons;
         }
 
         private List<Polygon> parsePolygonsFromXml(string filepath)
