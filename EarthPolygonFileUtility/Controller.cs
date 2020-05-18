@@ -22,14 +22,7 @@ namespace EarthPolygonFileUtility
             // List<Polygon> polygons = fetchAndReadKmzFiles(fileRecordUtility, 750);
 
 
-            SqlInsertFileWriter plantInsertsWriter = new SqlInsertFileWriter(
-                new List<string>()
-                {
-                    "PlantID", "CommonName", "ScientificName", "PlantDescription", "IsEdible"
-                }, createPlantInsertStringList(fileRecordUtility.PlantRecords));
 
-            string plantSql = plantInsertsWriter.CreateSqlInserts("plant");
-            File.WriteAllText("plant.sql", plantSql);
         }
 
         private List<Polygon> fetchAndReadKmzFiles(TableFileRecordUtility fileRecordUtility, int requestDelayMs)
@@ -48,22 +41,5 @@ namespace EarthPolygonFileUtility
             return allPolygons;
         }
 
-        private List<List<string>> createPlantInsertStringList(List<Plant> plants)
-        {
-            List<List<string>> strLists = new List<List<string>>();
-
-            plants.ForEach(it =>
-            {
-                List<string> rowStr = new List<string>();
-                rowStr.Add(it.PlantID.ToString());
-                rowStr.Add($"'{it.CommonName}'");
-                rowStr.Add($"'{it.ScientificName}'");
-                rowStr.Add($"'{it.PlantDescription}'");
-                rowStr.Add(it.IsEdible ? "1" : "0");
-                strLists.Add(rowStr);
-            });
-
-            return strLists;
-        }
     }
 }
