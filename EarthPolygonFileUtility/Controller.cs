@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using EarthPolygonFileUtility.Entities;
+using Microsoft.VisualBasic.FileIO;
 
 namespace EarthPolygonFileUtility
 {
@@ -34,7 +35,7 @@ namespace EarthPolygonFileUtility
                     return it;
                 }).ToList();
 
-            List<Polygon> polygons = fetchAndReadKmzFiles(fileRecordUtility);
+            List<Polygon> polygons = readKmzFiles(fileRecordUtility);
             List<Coordinate> coordinates = new List<Coordinate>();
 
             int coordinateIdx = 0;
@@ -52,6 +53,7 @@ namespace EarthPolygonFileUtility
 
             Console.WriteLine($"{polygons.Count:N0} polygons contained {coordinates.Count:N0} coordinates");
 
+            Console.WriteLine("Writing combined csv files . . . ");
             string plantRowsStr = createCsvRowStr(new List<KeyValuePair<string, bool>>()
             {
                 new KeyValuePair<string, bool>("PlantID", false),
@@ -115,55 +117,25 @@ namespace EarthPolygonFileUtility
             Console.WriteLine("Wrote csv files.");
         }
 
-        private List<Polygon> fetchAndReadKmzFiles(TableFileRecordUtility fileRecordUtility)
+        private List<Polygon> readKmzFiles(TableFileRecordUtility fileRecordUtility)
         {
             List<Polygon> allPolygons = new List<Polygon>();
+
+            FileIDNameUtility fileIdUtility = new FileIDNameUtility();
+            fileIdUtility.ReadInfoFile(Program.DriveFileIDCsvPath);
 
             for (int idx = 0; idx < fileRecordUtility.RegionShapeFileRecords.Count; idx++)
             {
                 RegionShapeFile rsf = fileRecordUtility.RegionShapeFileRecords[idx];
 
-                KmzFileToPointCollectionUtility kmzUtility = new KmzFileToPointCollectionUtility(rsf.LinkToFile);
+                KmzFileToPointCollectionUtility kmzUtility = new KmzFileToPointCollectionUtility();
+                string fileId = rsf.LinkToFile.Split("id=")[1];
+                KmzFileInfo fInfo = fileIdUtility.FileInfos.Find(it =>
+                    it.FileID.Equals(fileId));
 
-                int backoffMs = 15000;
-                bool successfullyDownloadedFile = false;
-                while (!successfullyDownloadedFile)
-                {
-                    try
-                    {
-                        Console.WriteLine($"Attempting to download ({idx+1}/" +
-                                          $"{fileRecordUtility.RegionShapeFileRecords.Count}): {rsf.LinkToFile}");
-                        string fileId = Guid.NewGuid().ToString().ToLower();
-
-                        WebClient wc = new WebClient();
-                        wc.Headers.Add("user-agent", "Mozilla/4.0 (compatible; MSIE 6.0; " +
-                                                     "Windows NT 5.2; .NET CLR 1.0.3705;)");
-
-                        string tempDownloadBase = fileId + ".kmz";
-                        string downloadedFile = Path.Combine(Program.TemporaryDataDirectory, tempDownloadBase);
-                        wc.DownloadFile(rsf.LinkToFile, downloadedFile);
-
-                        successfullyDownloadedFile = true;
-                        kmzUtility.GetPolygons(rsf.PlantID, downloadedFile, fileId).ForEach(x => allPolygons.Add(x));
-                        Console.WriteLine("Successfully acquired polygon file.");
-                    }
-                    catch (WebException ex)
-                    {
-                        Console.WriteLine($"Failed to acquire file from drive throttling error: {ex.Message}");
-                        backoffMs *= 2;
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Write($"Failed to acquire file from drive: {ex.Message}");
-                    }
-
-                    int secondsRemaining = (fileRecordUtility.RegionShapeFileRecords.Count -
-                                            (idx + 1)) * (backoffMs / 1000);
-
-                    Console.WriteLine($"Waiting for {backoffMs}ms before attempting next request.");
-                    Console.WriteLine($"Approximately {secondsRemaining} seconds remaining.");
-                    Thread.Sleep(backoffMs);
-                }
+                if (fInfo != null)
+                    kmzUtility.GetPolygons(rsf.PlantID, fInfo.FullPath, fileId)
+                        .ForEach(x => allPolygons.Add(x));
             }
 
             return allPolygons;
@@ -193,12 +165,17 @@ namespace EarthPolygonFileUtility
                 {
                     bool inQuotes = fields[idx].Value;
                     if (inQuotes && fieldValueList[idx].Length > 0)
-                        fieldValueList[idx] = $"'{fieldValueList[idx]}'";
-
-                    fieldValueList[idx] = fieldValueList[idx].Replace("\"", "\\\"");
+                    {
+                        fieldValueList[idx] = fieldValueList[idx].Replace("\"", "");
+                        fieldValueList[idx] = $@"""{fieldValueList[idx]}""";
+                    }
                 }
 
                 strOfRows += string.Join(",", fieldValueList) + "\r\n";
+
+                int interval = 1000;
+                if (fvlIdx > interval && fvlIdx % interval == 0)
+                    Console.WriteLine($"({fvlIdx:N0}/{rows.Count:N0})");
             }
 
             return strOfRows;

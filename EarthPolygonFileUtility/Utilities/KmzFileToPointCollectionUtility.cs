@@ -10,30 +10,39 @@ namespace EarthPolygonFileUtility
 {
     public class KmzFileToPointCollectionUtility
     {
-        public string Url { get; }
-
-        public KmzFileToPointCollectionUtility(string url)
+        public List<Polygon> GetPolygons(int plantId, string kmzFile, string fileId)
         {
-            Url = url;
-        }
+            List<Polygon> polygons = new List<Polygon>();
 
-        public List<Polygon> GetPolygons(int plantId, string downloadedFile, string fileId)
-        {
-            Directory.CreateDirectory(Program.TemporaryDataDirectory);
+            Directory.CreateDirectory(Program.TemporaryFilesDirectory);
 
-            string downloadedZipFile = downloadedFile.Replace(".kmz", ".zip");
-            File.Move(downloadedFile, downloadedZipFile);
-            string unzippedDirectory = Path.Combine(Program.TemporaryDataDirectory, fileId);
-            ZipFile.ExtractToDirectory(downloadedZipFile, unzippedDirectory);
+            try
+            {
+                string zipFilename = kmzFile.Replace(".kmz", ".zip");
+                if (File.Exists(zipFilename))
+                    File.Delete(zipFilename);
+                File.Copy(kmzFile, zipFilename);
 
-            DirectoryInfo dir = new DirectoryInfo(unzippedDirectory);
-            FileInfo[] f = dir.GetFiles();
-            FileInfo file = f[0];
-            string xmlFilename = file.FullName.Replace(".kml", ".xml");
-            File.Move(file.FullName, xmlFilename);
+                string unzippedDirectory = Path.Combine(Program.TemporaryFilesDirectory, fileId);
+                if (Directory.Exists(unzippedDirectory))
+                    Directory.Delete(unzippedDirectory, true);
+                ZipFile.ExtractToDirectory(zipFilename, unzippedDirectory);
 
-            List<Polygon> polygons = parsePolygonsFromXml(xmlFilename);
-            polygons.ForEach(pgon => pgon.PlantID = plantId);
+                DirectoryInfo dir = new DirectoryInfo(unzippedDirectory);
+                FileInfo[] f = dir.GetFiles();
+                FileInfo file = f[0];
+
+                string xmlFilename = file.FullName.Replace(".kml", ".xml");
+                File.Copy(file.FullName, xmlFilename);
+
+                polygons = parsePolygonsFromXml(xmlFilename);
+                polygons.ForEach(pgon => pgon.PlantID = plantId);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to get polygons for: {kmzFile}\n{ex.Message}");
+            }
+
             return polygons;
         }
 

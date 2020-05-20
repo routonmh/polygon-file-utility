@@ -23,7 +23,6 @@ namespace EarthPolygonFileUtility
             directories.ToList().ForEach(it =>
                 Console.WriteLine($"Directory found: {it}"));
 
-
             int idx = 0;
             directories.ToList().ForEach(it =>
             {
