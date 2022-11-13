@@ -67,18 +67,25 @@ namespace EarthPolygonFileUtility
                     {
                         string[] fields = parser.ReadFields();
 
-                        int offsetPlantId = Convert.ToInt32(fields[0]) +
-                                            (KeyCombinationBaseOffset * plantIdOffsetIdx);
-                        Plant p = new Plant()
+                        try
                         {
-                            PlantID = offsetPlantId,
-                            CommonName = fields[1],
-                            ScientificName = fields[2],
-                            PlantDescription = fields[3],
-                            IsEdible = fields[4].Equals("TRUE")
-                        };
+                            int offsetPlantId = Convert.ToInt32(fields[0]) +
+                                                (KeyCombinationBaseOffset * plantIdOffsetIdx);
+                            Plant p = new Plant()
+                            {
+                                PlantID = offsetPlantId,
+                                CommonName = fields[1],
+                                ScientificName = fields[2],
+                                PlantDescription = fields[3],
+                                IsEdible = fields[4].Equals("TRUE")
+                            };
 
-                        plants.Add(p);
+                            plants.Add(p);
+                        }
+                        catch (FormatException ex)
+                        {
+                            Console.WriteLine("Can't add this plant.");
+                        }
                     }
                 }
 

@@ -30,21 +30,24 @@ namespace EarthPolygonFileUtility
 
                         try
                         {
-                            string name = fields[1];
+                            string filename = fields[1];
                             string origin = fields[2];
 
-                            // Google drive automatically did this, also have to account for changing "'" chars in files.
-                            name = FilenameUtility.MakeCompliantFilename(name);
-
-                            KmzFileInfo a = new KmzFileInfo()
+                            if (Path.GetExtension(filename) == ".kmz")
                             {
-                                FileID = fields[0],
-                                Name = name,
-                                Origin = origin,
-                                FullPath = Path.Combine(Program.KmzFileDirectory, origin, name)
-                            };
+                                // Google drive automatically did this, also have to account for changing "'" chars in files.
+                                filename = FilenameUtility.MakeCompliantFilename(filename);
 
-                            files.Add(a);
+                                KmzFileInfo a = new KmzFileInfo
+                                {
+                                    FileID = fields[0],
+                                    Name = filename,
+                                    Origin = origin,
+                                    FullPath = Path.Combine(Program.KmzFileDirectory, origin, filename)
+                                };
+
+                                files.Add(a);
+                            }
                         }
                         catch (Exception ex)
                         {

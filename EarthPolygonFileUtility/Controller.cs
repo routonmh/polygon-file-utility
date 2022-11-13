@@ -129,13 +129,17 @@ namespace EarthPolygonFileUtility
                 RegionShapeFile rsf = fileRecordUtility.RegionShapeFileRecords[idx];
 
                 KmzFileToPointCollectionUtility kmzUtility = new KmzFileToPointCollectionUtility();
-                string fileId = rsf.LinkToFile.Split("id=")[1];
-                KmzFileInfo fInfo = fileIdUtility.FileInfos.Find(it =>
-                    it.FileID.Equals(fileId));
+                string[] parts = rsf.LinkToFile.Split("id=");
+                if (parts.Length > 1)
+                {
+                    string fileId = rsf.LinkToFile.Split("id=")[1];
+                    KmzFileInfo fInfo = fileIdUtility.FileInfos.Find(it =>
+                        it.FileID.Equals(fileId));
 
-                if (fInfo != null)
-                    kmzUtility.GetPolygons(rsf.PlantID, fInfo.FullPath, fileId)
-                        .ForEach(x => allPolygons.Add(x));
+                    if (fInfo != null)
+                        kmzUtility.GetPolygons(rsf.PlantID, fInfo.FullPath, fileId)
+                            .ForEach(x => allPolygons.Add(x));
+                }
             }
 
             return allPolygons;
